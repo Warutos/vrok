@@ -109,19 +109,19 @@ app.get('/historycompany',(req,res) => {
                   res.json({data});
                 } else {
                   console.log(`${rowCount} row(s) returned`);
+                  res.json({data});
                 }
                 connection.close();
               }
             );
             request.on("row", columns => {
-                var rowObject ={};
+                let rowObject ={};
                 columns.forEach(column => {
                     //console.log("%s\t%s", column.metadata.colName, column.value);
                     rowObject[column.metadata.colName] = column.value;
                 });
-                data.push(rowObject)
+                data.push(rowObject);
                 console.log(data);
-                res.json({data});
             });
             connection.execSql(request);
             //connection.close();
@@ -164,19 +164,19 @@ app.get('/historyuser',(req,res) => {
                   res.json({data});
                 } else {
                   console.log(`${rowCount} row(s) returned`);
+                  res.json({data});
                 }
                 connection.close();
               }
             );
             request.on("row", columns => {
-                var rowObject ={};
+                let rowObject ={};
                 columns.forEach(column => {
                     //console.log("%s\t%s", column.metadata.colName, column.value);
                     rowObject[column.metadata.colName] = column.value;
                 });
-                data.push(rowObject)
+                data.push(rowObject);
                 console.log(data);
-                res.json({data});
             });
             connection.execSql(request);
             //connection.close();
@@ -199,7 +199,7 @@ app.get('/admin',(req,res) => {
     from m_employee e
     left outer join m_company c on (e.company_id=c.company_id)
     left outer join t_atk_history h on (e.employee_id=h.employee_id)
-    where e.company_id = 'ntz' ORDER BY check_date DESC`
+    where e.company_id = '${id}' ORDER BY check_date DESC`
     
     const connection = new Connection(config);
     connection.on("connect", err => {
@@ -219,19 +219,19 @@ app.get('/admin',(req,res) => {
                   res.json({data});
                 } else {
                   console.log(`${rowCount} row(s) returned`);
+                  res.json({data});
                 }
                 connection.close();
               }
             );
             request.on("row", columns => {
-                var rowObject ={};
+                let rowObject ={};
                 columns.forEach(column => {
                     //console.log("%s\t%s", column.metadata.colName, column.value);
                     rowObject[column.metadata.colName] = column.value;
                 });
-                data.push(rowObject)
+                data.push(rowObject);
                 console.log(data);
-                res.json({data});
             });
             connection.execSql(request);
             //connection.close();
