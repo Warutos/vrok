@@ -2,6 +2,8 @@ const { Connection, Request } = require("tedious");
 const express = require('express');
 const app = express();
 const dbconf = require("./dbconfig");
+// import { createQuery } from "odata-v4-mssql";
+// import { ODataController, Edm, odata, ODataQuery } from "odata-v4-server";
 //const common = require('./apihub/Utility/common');
 //const APIKEY = 'a739ecf8-5d6c-443a-9ab9-1e730582aaa3';
 //const bodyParser = require('body-parser');
@@ -140,7 +142,7 @@ app.get('/historyuser',(req,res) => {
     let errdata = {status:'error'};
     let data = [];
     const sql = `select 
-    h.check_date,h.result,h.brand_id,h.photo_path
+    h.check_date,h.result,h.brand_id,h.photo_name
     from m_employee e
     left outer join m_company c on (e.company_id=c.company_id)
     left outer join t_atk_history h on (e.employee_id=h.employee_id)
@@ -194,7 +196,7 @@ app.get('/admin',(req,res) => {
 
     let errdata = {status:'error'};
     let data = [];
-    const sql =  `	select 
+    const sql =  `select 
     e.employee_id,e.first_name,e.last_name,h.check_date,h.result
     from m_employee e
     left outer join m_company c on (e.company_id=c.company_id)
@@ -239,6 +241,39 @@ app.get('/admin',(req,res) => {
       });
       connection.connect();
 });
+
+
+
+//odata service 
+//example request:  GET /api/Users?$filter=Id eq 42
+// app.get("/api/Users", (req, res) => {
+//     const filter = createFilter(req.query.$filter);
+//     // request instance from mssql module
+//     request.query(`select * from m_employee  where ${filter.where}`, function(err, data){
+//         res.json({
+//         	'@odata.context': req.protocol + '://' + req.get('host') + '/api/$id#m_employee',
+//         	value: data
+//         });
+//     });
+// });
+
+// const data = {
+//         employee_id:"ntz0000",
+//          first_name:"test",
+//          last_name:"naja",
+//          check_date:"2022-03-30T13:13:43.003Z",
+//          result:1,
+//   }
+  
+//   const connection = new Connection(config);
+
+//   const response = await o(connection.connect())
+//     .post('/post', data)
+//     .query(); 
+  
+//   console.log(response); // E.g. the user 
+
+
 
 const port = process.env.PORT || 3131;
 app.listen(port,() => console.log(`Listening on port ${port}.....`));
