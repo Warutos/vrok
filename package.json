@@ -6,6 +6,7 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@azure/cognitiveservices-customvision-prediction": "^5.1.2",
     "@sap/cds": "^5",
     "body-parser": "^1.19.2",
     "cors": "^2.8.5",
