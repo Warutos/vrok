@@ -8,6 +8,7 @@
   "dependencies": {
     "@sap/cds": "^5",
     "body-parser": "^1.19.2",
+    "cors": "^2.8.5",
     "express": "^4",
     "tedious": "^14.4.0"
   },
