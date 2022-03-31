@@ -454,18 +454,21 @@ app.post("/addATKHistory", (req, res) => {
     location: req.body.location,
     remark: req.body.remark,
     brand_id: req.body.brand_id,
+    brand_name: req.body.brand_name,
     create_date: req.body.create_date,
     create_by: req.body.create_by,
     update_date: req.body.update_date,
     update_by: req.body.update_by,
   };
 
-  const sql = `INSERT INTO t_atk_history (employee_id, check_date, result, photo_path, photo_name, photo_date, location, remark, brand_id, create_date, create_by, update_date, update_by)
+  const sql = `INSERT INTO t_atk_history (employee_id, check_date, result, photo_path, photo_name, photo_date, location, remark, brand_id, brand_name, create_date, create_by, update_date, update_by)
   VALUES ('${data.employee_id}','${data.check_date}','${data.result}','${
     data.photo_path
   }','${data.photo_name}','${data.photo_date}','${data.location}','${
     data.remark
-  }','${data.brand_id}','${reuse.datenow.toISOString()}','${data.create_by}','${
+  }','${data.brand_id}','${
+    data.brand_name
+  }','${reuse.datenow.toISOString()}','${data.create_by}','${
     data.update_date
   }','${data.update_by}');`;
 
