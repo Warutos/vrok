@@ -302,10 +302,14 @@ app.post("/resultatk", (req, res) => {
   const Jimp = require("jimp");
   const fs = require("fs");
 
+  const datenow = new Date();
+  const datetext =
+    datenow.getHours() + "" + datenow.getMinutes() + "" + datenow.getSeconds();
+
   const buffer = Buffer.from(photo, "base64");
   var image_pathname =
-    "./PictureATKTemp/" + reuse.dateformat + reuse.datetext + ".png";
-  var image_name = reuse.dateformat + reuse.datetext + ".png";
+    "./PictureATKTemp/" + reuse.dateformat + datetext + ".png";
+  var image_name = reuse.dateformat + datetext + ".png";
 
   Jimp.read(buffer, (err, res) => {
     if (err) throw new Error(err);
@@ -376,9 +380,7 @@ app.post("/resultatk", (req, res) => {
               if (err) throw new Error(err);
               var file = res
                 .quality(5)
-                .write(
-                  "./PictureATK/" + reuse.dateformat + reuse.datetext + ".png"
-                );
+                .write("./PictureATK/" + reuse.dateformat + datetext + ".png");
             });
           } else {
             api_status = "F"; // Fail
@@ -393,9 +395,7 @@ app.post("/resultatk", (req, res) => {
               if (err) throw new Error(err);
               var file = res
                 .quality(5)
-                .write(
-                  "./PictureATK/" + reuse.dateformat + reuse.datetext + ".png"
-                );
+                .write("./PictureATK/" + reuse.dateformat + datetext + ".png");
             });
           } else {
             api_status = "F"; // Fail
@@ -410,9 +410,7 @@ app.post("/resultatk", (req, res) => {
             if (err) throw new Error(err);
             var file = res
               .quality(5)
-              .write(
-                "./PictureATK/" + reuse.dateformat + reuse.datetext + ".png"
-              );
+              .write("./PictureATK/" + reuse.dateformat + datetext + ".png");
           });
         } else {
           api_status = "F"; // Fail
@@ -426,9 +424,7 @@ app.post("/resultatk", (req, res) => {
             if (err) throw new Error(err);
             var file = res
               .quality(5)
-              .write(
-                "./PictureATK/" + reuse.dateformat + reuse.datetext + ".png"
-              );
+              .write("./PictureATK/" + reuse.dateformat + datetext + ".png");
           });
         } else {
           api_status = "F"; // Fail
