@@ -10,9 +10,23 @@ const dbconf = require("./dbconfig");
 const readFileSync = require("fs");
 const bodyparser = require("body-parser");
 app.use(cors());
-app.use(bodyparser.urlencoded({ extended: true }));
-app.use(bodyparser.json({ type: "*/*" }));
-app.use(express.json());
+// app.use(bodyparser.urlencoded({ extended: true }));
+// app.use(bodyparser.json({ type: "*/*" }));
+// app.use(express.json({ limit: "50mb" }));
+// app.use(express.urlencoded({ limit: "50mb" }));
+
+var bodyParser = require("body-parser");
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(
+  bodyParser.urlencoded({
+    limit: "50mb",
+    extended: true,
+    parameterLimit: 50000,
+  })
+);
+
+//app.use(cors());
+//app.use(express.json());
 
 const util = require("util");
 const fs = require("fs");
@@ -34,8 +48,7 @@ const config = {
     encrypt: true,
   },
 };
-app.use(express.json());
-app.use(cors());
+
 app.post("/login", (req, res) => {
   let username = req.body.username;
   let password = req.body.password;
@@ -126,7 +139,7 @@ app.get("/image/:name", (req, res, next) => {
 });
 
 //list histoy by company fluke
-app.use(express.json());
+//app.use(express.json());
 app.get("/historycompany", (req, res) => {
   //res.send("GET History 111");
   let id = req.body.id;
@@ -178,7 +191,7 @@ app.get("/historycompany", (req, res) => {
 });
 
 //list histoy by user fluke
-app.use(express.json());
+//app.use(express.json());
 app.get("/historyuser", (req, res) => {
   //res.send("GET History 111");
   let id = req.body.id;
@@ -230,7 +243,7 @@ app.get("/historyuser", (req, res) => {
 });
 
 //list employee(admin) fluke
-app.use(express.json());
+//app.use(express.json());
 app.get("/admin", (req, res) => {
   //res.send("GET History 111");
   let id = req.body.id;
@@ -292,6 +305,8 @@ app.post("/resultatk", (req, res) => {
   const buffer = Buffer.from(photo, "base64");
   var image_pathname =
     "./PictureATKTemp/" + reuse.dateformat + reuse.datetext + ".png";
+  var image_name = reuse.dateformat + reuse.datetext + ".png";
+
   Jimp.read(buffer, (err, res) => {
     if (err) throw new Error(err);
     var file = res.quality(5).write(image_pathname);
@@ -356,7 +371,7 @@ app.post("/resultatk", (req, res) => {
           var result = negative - positive;
           if (result > 40) {
             var resultATK = 1; //Negative
-            res.json({ data: { api_status, resultATK } });
+            res.json({ data: { api_status, resultATK, image_name } });
             Jimp.read(buffer, (err, res) => {
               if (err) throw new Error(err);
               var file = res
@@ -373,7 +388,7 @@ app.post("/resultatk", (req, res) => {
           var result = positive - negative;
           if (result > 40) {
             var resultATK = 2; //Positive
-            res.json({ data: { api_status, resultATK } });
+            res.json({ data: { api_status, resultATK, image_name } });
             Jimp.read(buffer, (err, res) => {
               if (err) throw new Error(err);
               var file = res
@@ -390,7 +405,7 @@ app.post("/resultatk", (req, res) => {
       } else if (negative > 0) {
         if (negative > 80) {
           var resultATK = 1; //Negative
-          res.json({ data: { api_status, resultATK } });
+          res.json({ data: { api_status, resultATK, image_name } });
           Jimp.read(buffer, (err, res) => {
             if (err) throw new Error(err);
             var file = res
@@ -406,7 +421,7 @@ app.post("/resultatk", (req, res) => {
       } else if (positive > 0) {
         if (positive > 80) {
           var resultATK = 2; //Positive
-          res.json({ data: { api_status, resultATK } });
+          res.json({ data: { api_status, resultATK, image_name } });
           Jimp.read(buffer, (err, res) => {
             if (err) throw new Error(err);
             var file = res
@@ -437,17 +452,26 @@ app.post("/addATKHistory", (req, res) => {
     employee_id: req.body.employee_id,
     check_date: req.body.check_date,
     result: req.body.result,
+    photo_path: req.body.photo_path,
+    photo_name: req.body.photo_name,
+    photo_date: req.body.photo_date,
     location: req.body.location,
     remark: req.body.remark,
     brand_id: req.body.brand_id,
+    create_date: req.body.create_date,
+    create_by: req.body.create_by,
+    update_date: req.body.update_date,
+    update_by: req.body.update_by,
   };
 
-  const sql = `INSERT INTO t_atk_history (employee_id, check_date, result, location, remark,brand_id, create_date, create_by)
+  const sql = `INSERT INTO t_atk_history (employee_id, check_date, result, photo_path, photo_name, photo_date, location, remark, brand_id, create_date, create_by, update_date, update_by)
   VALUES ('${data.employee_id}','${data.check_date}','${data.result}','${
-    data.location
-  }','${data.remark}','${data.brand_id}','${reuse.datenow.toISOString()}','${
-    data.create_by
-  }');`;
+    data.photo_path
+  }','${data.photo_name}','${data.photo_date}','${data.location}','${
+    data.remark
+  }','${data.brand_id}','${reuse.datenow.toISOString()}','${data.create_by}','${
+    data.update_date
+  }','${data.update_by}');`;
 
   const connection = new Connection(config);
   connection.on("connect", (err) => {
