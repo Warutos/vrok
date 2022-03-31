@@ -127,9 +127,9 @@ app.get("/image/:name", (req, res, next) => {
 
 //list histoy by company fluke
 app.use(express.json());
-app.get("/historycompany", (req, res) => {
+app.get("/historycompany/:id", (req, res) => {
   //res.send("GET History 111");
-  let id = req.body.id;
+  var id = req.params.id;
   //let id ="ntz";
 
   let errdata = { status: "error" };
@@ -178,16 +178,16 @@ app.get("/historycompany", (req, res) => {
 });
 
 //list histoy by user fluke
-app.use(express.json());
-app.get("/historyuser", (req, res) => {
+//app.use(express.json());
+app.get("/historyuser/:id", (req, res) => {
   //res.send("GET History 111");
-  let id = req.body.id;
+  //let id = req.body.id;
   //let id ="ntz";
-
+  var id = req.params.id;
   let errdata = { status: "error" };
   let data = [];
   const sql = `select 
-    h.check_date,h.result,h.brand_id,h.photo_name
+    h.check_date,h.result,h.brand_name,h.photo_name
     from m_employee e
     left outer join m_company c on (e.company_id=c.company_id)
     left outer join t_atk_history h on (e.employee_id=h.employee_id)
@@ -230,12 +230,12 @@ app.get("/historyuser", (req, res) => {
 });
 
 //list employee(admin) fluke
-app.use(express.json());
-app.get("/admin", (req, res) => {
+//app.use(express.json());
+app.get("/admin/:id", (req, res) => {
   //res.send("GET History 111");
-  let id = req.body.id;
+  //let id = req.body.id;
   //let id ="ntz";
-
+  var id = req.params.id;
   let errdata = { status: "error" };
   let data = [];
   const sql = `select 
