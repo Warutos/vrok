@@ -281,6 +281,7 @@ app.get("/admin", (req, res) => {
   connection.connect();
 });
 
+// Result ATK and Azure ML(Custom Vision)
 app.post("/resultatk", (req, res) => {
   var data = {};
   var photo = req.body.photo;
@@ -289,11 +290,11 @@ app.post("/resultatk", (req, res) => {
   const fs = require("fs");
 
   const buffer = Buffer.from(photo, "base64");
+  var image_pathname =
+    "./PictureATKTemp/" + reuse.dateformat + reuse.datetext + ".png";
   Jimp.read(buffer, (err, res) => {
     if (err) throw new Error(err);
-    var file = res
-      .quality(5)
-      .write("./PictureATKTemp/" + reuse.dateformat + reuse.datetext + ".png");
+    var file = res.quality(5).write(image_pathname);
   });
 
   const predictionKey = "d22d4e8a21814a4cb44cba126ebba65a";
@@ -355,7 +356,7 @@ app.post("/resultatk", (req, res) => {
           var result = negative - positive;
           if (result > 40) {
             var resultATK = 1; //Negative
-            res.json({ api_status, resultATK });
+            res.json({ data: { api_status, resultATK } });
             Jimp.read(buffer, (err, res) => {
               if (err) throw new Error(err);
               var file = res
@@ -372,7 +373,7 @@ app.post("/resultatk", (req, res) => {
           var result = positive - negative;
           if (result > 40) {
             var resultATK = 2; //Positive
-            res.json({ api_status, resultATK });
+            res.json({ data: { api_status, resultATK } });
             Jimp.read(buffer, (err, res) => {
               if (err) throw new Error(err);
               var file = res
@@ -389,7 +390,7 @@ app.post("/resultatk", (req, res) => {
       } else if (negative > 0) {
         if (negative > 80) {
           var resultATK = 1; //Negative
-          res.json({ api_status, resultATK });
+          res.json({ data: { api_status, resultATK } });
           Jimp.read(buffer, (err, res) => {
             if (err) throw new Error(err);
             var file = res
@@ -405,7 +406,7 @@ app.post("/resultatk", (req, res) => {
       } else if (positive > 0) {
         if (positive > 80) {
           var resultATK = 2; //Positive
-          res.json({ api_status, resultATK });
+          res.json({ data: { api_status, resultATK } });
           Jimp.read(buffer, (err, res) => {
             if (err) throw new Error(err);
             var file = res
@@ -428,6 +429,47 @@ app.post("/resultatk", (req, res) => {
 
   machineLearningResult().then();
   module.exports.machineLearningResult = machineLearningResult;
+});
+
+// Insert data to table(t_atk_history)
+app.post("/addATKHistory", (req, res) => {
+  var data = {
+    employee_id: req.body.employee_id,
+    check_date: req.body.check_date,
+    result: req.body.result,
+    location: req.body.location,
+    remark: req.body.remark,
+    brand_id: req.body.brand_id,
+  };
+
+  const sql = `INSERT INTO t_atk_history (employee_id, check_date, result, location, remark,brand_id, create_date, create_by)
+  VALUES ('${data.employee_id}','${data.check_date}','${data.result}','${
+    data.location
+  }','${data.remark}','${data.brand_id}','${reuse.datenow.toISOString()}','${
+    data.create_by
+  }');`;
+
+  const connection = new Connection(config);
+  connection.on("connect", (err) => {
+    if (err) {
+      console.error(err.message);
+      res.json({ data });
+    } else {
+      console.log("Insert to Table t_atk_history...");
+      const request = new Request(sql, (err) => {
+        if (err) {
+          console.error(err.message);
+          //data.push(err);
+          res.json({ data });
+        } else {
+          res.json({ data });
+        }
+        connection.close();
+      });
+      connection.execSql(request);
+    }
+  });
+  connection.connect();
 });
 
 const port = process.env.PORT || 3131;
