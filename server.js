@@ -367,7 +367,7 @@ app.post("/resultatk", (req, res) => {
             });
           } else {
             api_status = "F"; // Fail
-            res.json({ api_status });
+            res.json({ data: { api_status } });
           }
         } else {
           var result = positive - negative;
@@ -384,7 +384,7 @@ app.post("/resultatk", (req, res) => {
             });
           } else {
             api_status = "F"; // Fail
-            res.json({ api_status });
+            res.json({ data: { api_status } });
           }
         }
       } else if (negative > 0) {
@@ -401,7 +401,7 @@ app.post("/resultatk", (req, res) => {
           });
         } else {
           api_status = "F"; // Fail
-          res.json({ api_status });
+          res.json({ data: { api_status } });
         }
       } else if (positive > 0) {
         if (positive > 80) {
@@ -417,7 +417,7 @@ app.post("/resultatk", (req, res) => {
           });
         } else {
           api_status = "F"; // Fail
-          res.json({ api_status });
+          res.json({ data: { api_status } });
         }
       }
     } catch (error) {
