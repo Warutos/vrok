@@ -297,83 +297,125 @@ app.get("/admin/:id", (req, res) => {
 // Result ATK and Azure ML(Custom Vision)
 app.post("/resultatk", (req, res) => {
   var data = {};
+  let errdata = { status: "error" };
+  let status = errdata.status;
   var photo = req.body.photo;
+  if (!photo) {
+    res.json({ data: { status } });
+  } else {
+    const Jimp = require("jimp");
+    const fs = require("fs");
 
-  const Jimp = require("jimp");
-  const fs = require("fs");
+    const datenow = new Date();
+    const datetext =
+      datenow.getHours() +
+      "" +
+      datenow.getMinutes() +
+      "" +
+      datenow.getSeconds();
 
-  const datenow = new Date();
-  const datetext =
-    datenow.getHours() + "" + datenow.getMinutes() + "" + datenow.getSeconds();
+    const buffer = Buffer.from(photo, "base64");
+    var image_pathname =
+      "./PictureATKTemp/" + reuse.dateformat + datetext + ".png";
+    var image_name = reuse.dateformat + datetext + ".png";
 
-  const buffer = Buffer.from(photo, "base64");
-  var image_pathname =
-    "./PictureATKTemp/" + reuse.dateformat + datetext + ".png";
-  var image_name = reuse.dateformat + datetext + ".png";
+    Jimp.read(buffer, (err, res) => {
+      if (err) throw new Error(err);
+      var file = res.quality(5).write(image_pathname);
+    });
 
-  Jimp.read(buffer, (err, res) => {
-    if (err) throw new Error(err);
-    var file = res.quality(5).write(image_pathname);
-  });
+    const predictionKey = "d22d4e8a21814a4cb44cba126ebba65a";
+    const predictionResourceId =
+      "/subscriptions/53952dfb-8218-4d31-8adf-60d350a31c4c/resourceGroups/CustomVisionWebcasts/providers/Microsoft.CognitiveServices/accounts/CustomVisionVROK-Prediction";
+    const predictionEndpoint =
+      "https://customvisionvrok-prediction.cognitiveservices.azure.com/";
 
-  const predictionKey = "d22d4e8a21814a4cb44cba126ebba65a";
-  const predictionResourceId =
-    "/subscriptions/53952dfb-8218-4d31-8adf-60d350a31c4c/resourceGroups/CustomVisionWebcasts/providers/Microsoft.CognitiveServices/accounts/CustomVisionVROK-Prediction";
-  const predictionEndpoint =
-    "https://customvisionvrok-prediction.cognitiveservices.azure.com/";
+    // Authenticate the client
+    const predictor_credentials = new msRest.ApiKeyCredentials({
+      inHeader: { "Prediction-key": predictionKey },
+    });
+    const predictor = new PredictionApi.PredictionAPIClient(
+      predictor_credentials,
+      predictionEndpoint
+    );
 
-  // Authenticate the client
-  const predictor_credentials = new msRest.ApiKeyCredentials({
-    inHeader: { "Prediction-key": predictionKey },
-  });
-  const predictor = new PredictionApi.PredictionAPIClient(
-    predictor_credentials,
-    predictionEndpoint
-  );
+    const publishIterationName = "Iteration4";
+    const setTimeoutPromise = util.promisify(setTimeout);
 
-  const publishIterationName = "Iteration4";
-  const setTimeoutPromise = util.promisify(setTimeout);
+    //const inputFile = fs.readFileSync(`./PictureATK/images.jpg`);
+    const buffer_ml = buffer;
 
-  //const inputFile = fs.readFileSync(`./PictureATK/images.jpg`);
-  const buffer_ml = buffer;
-
-  async function machineLearningResult() {
-    try {
-      const results = await predictor.detectImage(
-        "82841321-2493-42c9-a7f4-55bd255771fc",
-        publishIterationName,
-        buffer_ml
-      );
-      console.log("------------------ Pass ------------------");
-      results.predictions.forEach((predictedResult) => {
-        console.log(
-          `\t ${predictedResult.tagName}: ${(
-            predictedResult.probability * 100.0
-          ).toFixed(2)}%`
+    async function machineLearningResult() {
+      try {
+        const results = await predictor.detectImage(
+          "82841321-2493-42c9-a7f4-55bd255771fc",
+          publishIterationName,
+          buffer_ml
         );
-      });
+        console.log("------------------ Pass ------------------");
+        results.predictions.forEach((predictedResult) => {
+          console.log(
+            `\t ${predictedResult.tagName}: ${(
+              predictedResult.probability * 100.0
+            ).toFixed(2)}%`
+          );
+        });
 
-      var api_status = results.predictions.length > 0 ? "S" : "F";
-      let arrayPredictions = results.predictions;
-      var positive = 0;
-      var negative = 0;
+        var api_status = results.predictions.length > 0 ? "S" : "F";
+        let arrayPredictions = results.predictions;
+        var positive = 0;
+        var negative = 0;
 
-      for (var n = 0; n < arrayPredictions.length; n++) {
-        if (arrayPredictions[n].tagName == "ATK_Negative") {
-          if (arrayPredictions[n].probability * 100.0 > negative) {
-            negative = arrayPredictions[n].probability * 100.0;
-          }
-        } else {
-          if (arrayPredictions[n].probability * 100.0 > positive) {
-            positive = arrayPredictions[n].probability * 100.0;
+        for (var n = 0; n < arrayPredictions.length; n++) {
+          if (arrayPredictions[n].tagName == "ATK_Negative") {
+            if (arrayPredictions[n].probability * 100.0 > negative) {
+              negative = arrayPredictions[n].probability * 100.0;
+            }
+          } else {
+            if (arrayPredictions[n].probability * 100.0 > positive) {
+              positive = arrayPredictions[n].probability * 100.0;
+            }
           }
         }
-      }
 
-      if (negative > 0 && positive > 0) {
-        if (negative > positive) {
-          var result = negative - positive;
-          if (result > 40) {
+        if (negative > 0 && positive > 0) {
+          if (negative > positive) {
+            var result = negative - positive;
+            if (result > 40) {
+              var resultATK = 1; //Negative
+              res.json({ data: { api_status, resultATK, image_name } });
+              Jimp.read(buffer, (err, res) => {
+                if (err) throw new Error(err);
+                var file = res
+                  .quality(5)
+                  .write(
+                    "./PictureATK/" + reuse.dateformat + datetext + ".png"
+                  );
+              });
+            } else {
+              api_status = "F"; // Fail
+              res.json({ data: { api_status } });
+            }
+          } else {
+            var result = positive - negative;
+            if (result > 40) {
+              var resultATK = 2; //Positive
+              res.json({ data: { api_status, resultATK, image_name } });
+              Jimp.read(buffer, (err, res) => {
+                if (err) throw new Error(err);
+                var file = res
+                  .quality(5)
+                  .write(
+                    "./PictureATK/" + reuse.dateformat + datetext + ".png"
+                  );
+              });
+            } else {
+              api_status = "F"; // Fail
+              res.json({ data: { api_status } });
+            }
+          }
+        } else if (negative > 0) {
+          if (negative > 80) {
             var resultATK = 1; //Negative
             res.json({ data: { api_status, resultATK, image_name } });
             Jimp.read(buffer, (err, res) => {
@@ -386,9 +428,8 @@ app.post("/resultatk", (req, res) => {
             api_status = "F"; // Fail
             res.json({ data: { api_status } });
           }
-        } else {
-          var result = positive - negative;
-          if (result > 40) {
+        } else if (positive > 0) {
+          if (positive > 80) {
             var resultATK = 2; //Positive
             res.json({ data: { api_status, resultATK, image_name } });
             Jimp.read(buffer, (err, res) => {
@@ -402,44 +443,15 @@ app.post("/resultatk", (req, res) => {
             res.json({ data: { api_status } });
           }
         }
-      } else if (negative > 0) {
-        if (negative > 80) {
-          var resultATK = 1; //Negative
-          res.json({ data: { api_status, resultATK, image_name } });
-          Jimp.read(buffer, (err, res) => {
-            if (err) throw new Error(err);
-            var file = res
-              .quality(5)
-              .write("./PictureATK/" + reuse.dateformat + datetext + ".png");
-          });
-        } else {
-          api_status = "F"; // Fail
-          res.json({ data: { api_status } });
-        }
-      } else if (positive > 0) {
-        if (positive > 80) {
-          var resultATK = 2; //Positive
-          res.json({ data: { api_status, resultATK, image_name } });
-          Jimp.read(buffer, (err, res) => {
-            if (err) throw new Error(err);
-            var file = res
-              .quality(5)
-              .write("./PictureATK/" + reuse.dateformat + datetext + ".png");
-          });
-        } else {
-          api_status = "F"; // Fail
-          res.json({ data: { api_status } });
-        }
+      } catch (error) {
+        console.log(error);
+        console.log("------------------ Error ------------------");
+        console.error("Error with the request:", error);
       }
-    } catch (error) {
-      console.log(error);
-      console.log("------------------ Error ------------------");
-      console.error("Error with the request:", error);
     }
+    machineLearningResult().then();
+    module.exports.machineLearningResult = machineLearningResult;
   }
-
-  machineLearningResult().then();
-  module.exports.machineLearningResult = machineLearningResult;
 });
 
 // Insert data to table(t_atk_history)
@@ -461,31 +473,37 @@ app.post("/addATKHistory", (req, res) => {
     update_by: req.body.update_by,
   };
 
+  let today = new Date();
+
   const sql = `INSERT INTO t_atk_history (employee_id, check_date, result, photo_path, photo_name, photo_date, location, remark, brand_id, brand_name, create_date, create_by, update_date, update_by)
   VALUES ('${data.employee_id}','${data.check_date}','${data.result}','${
     data.photo_path
   }','${data.photo_name}','${data.photo_date}','${data.location}','${
     data.remark
-  }','${data.brand_id}','${
-    data.brand_name
-  }','${reuse.datenow.toISOString()}','${data.create_by}','${
-    data.update_date
-  }','${data.update_by}');`;
+  }','${data.brand_id}','${data.brand_name}','${today.toISOString()}','${
+    data.create_by
+  }','${data.update_date}','${data.update_by}');`;
 
   const connection = new Connection(config);
   connection.on("connect", (err) => {
     if (err) {
       console.error(err.message);
-      res.json({ data });
+      // res.json({ data });
+      res.json({ data: { errorstatus, errormessage } });
     } else {
-      console.log("Insert to Table t_atk_history...");
+      console.log("Insert to Table t_atk_history");
       const request = new Request(sql, (err) => {
         if (err) {
           console.error(err.message);
           //data.push(err);
-          res.json({ data });
+          let errdata = { status: "error" };
+          var status = errdata.status;
+          var message = err.message;
+          res.json({ data: { status, message } });
         } else {
-          res.json({ data });
+          var successdata = { status: "success" };
+          var status = successdata.status;
+          res.json({ data: { status } });
         }
         connection.close();
       });
