@@ -244,7 +244,7 @@ app.get("/historyuser/:id", (req, res) => {
 
 //list employee(admin) fluke
 //app.use(express.json());
-app.get("/admin", (req, res) => {
+app.get("/employeelist", (req, res) => {
   //res.send("GET History 111");
   //let id = req.body.id;
   //let id ="ntz";
@@ -252,10 +252,13 @@ app.get("/admin", (req, res) => {
   let errdata = { status: "error" };
   let data = [];
   const sql = `select 
-    e.employee_id,e.first_name,e.last_name,h.check_date,h.result
+    e.employee_id,e.first_name,e.last_name,e.position,d.department_name,
+    (select top 1 h.result from t_atk_history h where e.employee_id=h.employee_id order by h.check_date desc) result,
+    (select top 1 h.check_date from t_atk_history h where e.employee_id=h.employee_id order by h.check_date desc) check_date
     from m_employee e
     left outer join m_company c on (e.company_id=c.company_id)
-    left outer join t_atk_history h on (e.employee_id=h.employee_id) ORDER BY employee_id`;
+    left outer join m_department d on (e.department_id=d.department_id)
+    ORDER BY employee_id`;
 
   const connection = new Connection(config);
   connection.on("connect", (err) => {
