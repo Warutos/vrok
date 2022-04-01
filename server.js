@@ -281,7 +281,7 @@ app.get("/employeelist", (req, res) => {
         connection.close();
       });
       request.on("row", (columns) => {
-        let rowObject = {};
+        let rowObject = { selection: false };
         columns.forEach((column) => {
           //console.log("%s\t%s", column.metadata.colName, column.value);
           rowObject[column.metadata.colName] = column.value;
