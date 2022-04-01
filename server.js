@@ -476,13 +476,7 @@ app.post("/addATKHistory", (req, res) => {
   let today = new Date();
 
   const sql = `INSERT INTO t_atk_history (employee_id, check_date, result, photo_path, photo_name, photo_date, location, remark, brand_id, brand_name, create_date, create_by, update_date, update_by)
-  VALUES ('${data.employee_id}','${data.check_date}','${data.result}','${
-    data.photo_path
-  }','${data.photo_name}','${data.photo_date}','${data.location}','${
-    data.remark
-  }','${data.brand_id}','${data.brand_name}','${today.toISOString()}','${
-    data.create_by
-  }','${data.update_date}','${data.update_by}');`;
+  VALUES ('${data.employee_id}','${data.check_date}','${data.result}','${data.photo_path}','${data.photo_name}','${data.photo_date}','${data.location}','${data.remark}','${data.brand_id}','${data.brand_name}','${data.create_date}','${data.create_by}','${data.update_date}','${data.update_by}');`;
 
   const connection = new Connection(config);
   connection.on("connect", (err) => {
