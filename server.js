@@ -341,7 +341,7 @@ app.post("/resultatk", (req, res) => {
       predictionEndpoint
     );
 
-    const publishIterationName = "Iteration4";
+    const publishIterationName = "Iteration6";
     const setTimeoutPromise = util.promisify(setTimeout);
 
     //const inputFile = fs.readFileSync(`./PictureATK/images.jpg`);
@@ -396,7 +396,8 @@ app.post("/resultatk", (req, res) => {
               });
             } else {
               api_status = "F"; // Fail
-              res.json({ data: { api_status } });
+              var resultATK = 3;
+              res.json({ data: { api_status, resultATK } });
             }
           } else {
             var result = positive - negative;
@@ -413,7 +414,8 @@ app.post("/resultatk", (req, res) => {
               });
             } else {
               api_status = "F"; // Fail
-              res.json({ data: { api_status } });
+              var resultATK = 3;
+              res.json({ data: { api_status, resultATK } });
             }
           }
         } else if (negative > 0) {
@@ -428,7 +430,8 @@ app.post("/resultatk", (req, res) => {
             });
           } else {
             api_status = "F"; // Fail
-            res.json({ data: { api_status } });
+            var resultATK = 3;
+            res.json({ data: { api_status, resultATK } });
           }
         } else if (positive > 0) {
           if (positive > 80) {
@@ -442,7 +445,8 @@ app.post("/resultatk", (req, res) => {
             });
           } else {
             api_status = "F"; // Fail
-            res.json({ data: { api_status } });
+            var resultATK = 3;
+            res.json({ data: { api_status, resultATK } });
           }
         }
       } catch (error) {
