@@ -281,10 +281,14 @@ app.get("/employeelist", (req, res) => {
         connection.close();
       });
       request.on("row", (columns) => {
-        let rowObject = { selection: false };
+        let rowObject = {};
         columns.forEach((column) => {
           //console.log("%s\t%s", column.metadata.colName, column.value);
           rowObject[column.metadata.colName] = column.value;
+          if (column.metadata.colName == "result") {
+            rowObject["selection"] = false;
+            rowObject["disable"] = column.value == 1 ? false : true;
+          }
         });
         data.push(rowObject);
         console.log(data);
@@ -503,7 +507,7 @@ app.post("/addATKHistory", (req, res) => {
         } else {
           var successdata = { status: "success" };
           var status = successdata.status;
-          res.json({ data: { status } });
+          res.json({ data: { status, data } });
         }
         connection.close();
       });
